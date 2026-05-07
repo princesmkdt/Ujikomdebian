@@ -1,72 +1,43 @@
 #!/bin/bash
 
+# Ensure script is run as root
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run as root (use sudo)"
+    exit 1
+fi
+
 set -euo pipefail
 
-echo "Updating Repository......"
-int(input("Update Repository? Y/n: "))
-
-if [ "$input" = "Y" ]; then
-    echo "Updating repository..."
-    sudo apt update
-else
-    echo "Exiting..."
-fi
 echo "Debian Module Installation Script"
 echo "Modul Ini Dipakai sesudah Konfig IP Static!!"
+echo "------------------------------------------"
 
-int(input("Install Modul Debian?? Y/n: "))
+# Function to ask and execute
+ask_and_install() {
+    local prompt="$1"
+    local command="$2"
+    read -p "$prompt (Y/n): " input
+    if [[ "$input" =~ ^[Yy]$ ]]; then
+        echo "Executing: $command"
+        eval "$command"
+    else
+        echo "Skipping..."
+    fi
+    echo ""
+}
 
-if [ "$input" = "Y" ]; then
-    echo "Installing module..."
-    sudo apt install bind9 dnsutils
-else
-    echo "Exiting..."
-fi
-int(input("install Modul nginx dan APACHE?? Y/n: "))
+ask_and_install "Update Repository?" "apt update"
 
-if [ "$input" = "Y" ]; then
-    echo "Installing module..."
-    sudo apt install nginx apache2
-else
-    echo "Exiting..."
-fi
-int(input("Install Ftp Server Y/n:"))
+ask_and_install "Install Modul Debian (Bind9, Dnsutils)?" "apt install -y bind9 dnsutils"
 
-if [ "$input" = "Y" ]; then
-    echo "Installing module..."
-    sudo apt install proftpd ftp
-else
-    echo "Exiting..."
-fi
-int(input("Install Database(MariaDB Server) beserta php Y/n?:"))
+ask_and_install "Install Modul Nginx dan Apache2?" "apt install -y nginx apache2"
 
-if [ "$input" = "Y" ]; then
-    echo "Installing module..."
-    sudo apt install mariadb-server php php-fpm
-else
-    echo "Exiting..."
-fi
-int(input("Install FTP(File Transfer Protocol) Server Y/n: "))
+ask_and_install "Install FTP Server (ProFTPD)?" "apt install -y proftpd-basic ftp"
 
-if [ "$input" = "Y" ]; then
-    echo "Installing module..."
-    sudo apt install proftpd ftp
-else
-    echo "Exiting..."
-fi
-int(input("Install Mail Server(postfix) Y/n:"))
+ask_and_install "Install Database (MariaDB Server) beserta PHP?" "apt install -y mariadb-server php php-fpm php-mysql"
 
-if [ "$input" = "Y" ]; then
-    echo "Installing module..."
-    sudo apt install postfix
-else
-    echo "Exiting..."
-fi
-int(input("Install Webmail(Roundcube) Y/n:"))
+ask_and_install "Install Mail Server (Postfix)?" "apt install -y postfix"
 
-if [ "$input" = "Y" ]; then
-    echo "Installing module..."
-    sudo apt install roundcube
-else
-    echo "Exiting..."
-fi
+ask_and_install "Install Webmail (Roundcube)?" "apt install -y roundcube"
+
+echo "Semua proses selesai!"
